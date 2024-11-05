@@ -15,7 +15,7 @@ from jwt.exceptions import InvalidKeyError
 from jwt.exceptions import ImmatureSignatureError
 from starlette.responses import RedirectResponse
 
-from busykoala_oidc.exceptions import OpenIDConnectException
+from fastapi_bps_sso.exceptions import OpenIDConnectException
 
 logger = logging.getLogger(__name__)
 
