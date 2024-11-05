@@ -7,13 +7,15 @@ from typing import Dict
 from urllib.parse import quote
 
 import jwt
+import jwt.algorithms
 import requests
 from fastapi import Request
-from jwt.exceptions import DecodeError
-from jwt.exceptions import InvalidTokenError
+from jwt.exceptions import DecodeError as JWTDecodeError
+from jwt.exceptions import InvalidKeyError
+from jwt.exceptions import ImmatureSignatureError
 from starlette.responses import RedirectResponse
 
-from fastapi_oidc_auth.exceptions import OpenIDConnectException
+from busykoala_oidc.exceptions import OpenIDConnectException
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ class OpenIDConnect:
         app_uri: str,
         client_id: str,
         client_secret: str,
-        scope: str = "openid email profile",
+        scope: str = "openid",
     ) -> None:
         self.app_uri = app_uri
         self.scope = scope
@@ -51,10 +53,11 @@ class OpenIDConnect:
         id_token = auth_token.get("id_token")
         try:
             alg = jwt.get_unverified_header(id_token).get("alg")
-        except DecodeError:
+        except JWTDecodeError:
             logging.warning("Error getting unverified header in jwt.")
             raise OpenIDConnectException
         validated_token = self.obtain_validated_token(alg, id_token)
+        logging.info(f"validated-token: {validated_token}")
         if not get_user_info:
             return validated_token
         user_info = self.get_user_info(auth_token.get("access_token"))
@@ -93,7 +96,7 @@ class OpenIDConnect:
                     algorithms=["HS256"],
                     audience=self.client_id,
                 )
-            except InvalidTokenError:
+            except InvalidKeyError:
                 logger.error("An error occurred while decoding the id_token")
                 raise OpenIDConnectException(
                     "An error occurred while decoding the id_token"
@@ -110,7 +113,7 @@ class OpenIDConnect:
                     algorithms=["RS256"],
                     audience=self.client_id,
                 )
-            except InvalidTokenError:
+            except InvalidKeyError:
                 logger.error("An error occurred while decoding the id_token")
                 raise OpenIDConnectException(
                     "An error occurred while decoding the id_token"
@@ -129,7 +132,7 @@ class OpenIDConnect:
             )
         try:
             kid = jwt.get_unverified_header(id_token).get("kid")
-        except DecodeError:
+        except JWTDecodeError:
             logger.warning("kid could not be extracted.")
             raise OpenIDConnectException("kid could not be extracted.")
         return public_keys.get(kid)

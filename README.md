@@ -1,14 +1,16 @@
-# OpenID Connect for FastAPI
+# SSO BPS OpenID Connect for FastAPI
 
-`fastapi-oidc-auth` is an extension to [FastAPI](https://fastapi.tiangolo.com/)
+`fastapi-bps-sso` is an extension to [FastAPI](https://fastapi.tiangolo.com/)
 that allows you to add OpenID Connect based authentication for your endpoints
 within minutes.
+
+It is just a fork to make it easier for me to maintain.
 
 ## Installation
 
 ```
-# TODO: not yet released
-poetry add fastapi-oidc-auth
+pdm add pyjwt cryptography
+pdm add "git+https://github.com/akhlul/fastapi-bps-sso.git"
 ```
 
 ## How to use
@@ -25,7 +27,7 @@ from fastapi import Request
 from fastapi_oidc_auth.auth import OpenIDConnect
 
 # realm (e.g. Keycloak instance)
-host = "http://localhost:8080"
+host = "https://sso.bps.go.id"
 realm = "example-realm"
 client_id = "example-client"
 client_secret = "xxx765cd-20ba-44a3-9584-784807a36906"
@@ -41,9 +43,6 @@ async def very_secret(request: Request) -> Dict:
     return {"message": "success", "user_info": request.user_info}
 ```
 
-## Ongoing Work
+## Notes
 
-- Implement testing
-- Maybe release package
-- Possibly refactor to a more FastAPIish style (middleware/depends)
-- Make more configurable
+- It won't work if you access the app at `http://localhost:5000`, but the app_uri config is set to `http://127.0.0.1:5000`. Both URLs point to the same website you're developing, but the mismatch will cause issues.

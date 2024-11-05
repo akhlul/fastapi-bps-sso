@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fastapi-oidc-auth"
+name = "fastapi-bps-sso"
 version = "0.1.0"
 description = "OIDC auth in fastapi using a decorator."
 authors = ["Matthias Osswald <m@osswald.li>"]
